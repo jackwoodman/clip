@@ -10,7 +10,7 @@ display_welcome()
 
 # initialise
 system_config = SystemConfig()
-portfolio = Portfolio()
+portfolio = Portfolio("Jack Woodman")
 
 while system_config.main_loop_continue:
     new_command = read_new_command()

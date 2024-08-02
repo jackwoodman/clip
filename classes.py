@@ -48,7 +48,7 @@ class Position:
     def __repr__(self):
         return (
             f"{'Sell ' if self.is_sell else ''}Position: {self.id} -> {self.number_of_shares}"
-            f"x ${self.share_price} = ${self.value}. "
+            f" x ${self.share_price:.2f} = ${self.value:.2f}. "
         )
 
 
@@ -71,7 +71,7 @@ class Ticker:
         self.total_shares += new_position.number_of_shares
         self.total_value += new_position.value
         self.position_count += 1
-        self.avg_price = (self.avg_price + new_position.share_price) / 2
+        self.avg_price = (self.avg_price + new_position.share_price) / 2 if self.position_count > 1 else new_position.share_price
 
     def get_position(self, position_id: str) -> Position:
         return self.positions.get(position_id, None)
@@ -95,7 +95,9 @@ class Ticker:
         self.sell_count += 1
         self.total_shares -= sell_position.number_of_shares
         self.total_value -= sell_position.value
-        self.avg_price = (self.avg_price * 2) - sell_position.share_price
+
+        self.avg_price = self.total_value / self.total_shares
+     
 
         self.positions[sell_position.id] = sell_position
 
@@ -107,19 +109,21 @@ class Ticker:
             f"{self.description}" + '\n' if self.description else f"Ticker: {self.name}\n"
             f" - Number of positions held: {self.position_count}\n"
             f" - (Number of sold positions: {self.sell_count})\n"
-            f" - Total value: ${self.total_value}\n"
-            f" - Average price: ${self.avg_price}\n"  
+            f" - Total value: ${self.total_value:.2f}\n"
+            f" - Average price: ${self.avg_price:.2f}\n"  
         )
     
     def __repr__(self):
         return (
-            f"Ticker {self.name} -> {self.position_count} - {self.sell_count} @ ${self.avg_price}avg = ${self.total_value}"
+            f"Ticker {self.name} -> {self.position_count} - {self.sell_count} @ ${self.avg_price:.2f}avg = ${self.total_value}"
         )
 
 
 class Portfolio:
-    def __init__(self):
+    def __init__(self, name: str):
+        self.name = name
         self.tickers: dict[str, Ticker] = {}
+        self.ticker_count = 0
 
     def buy_position(self, ticker_name: str, position: Position, description: Optional[str] = None):
         self.add_ticker(ticker_name)
@@ -134,8 +138,9 @@ class Portfolio:
     def add_ticker(self, ticker_name: str, description: Optional[str] = None) -> bool:
         ticker_uppercase = ticker_name.upper()
 
-        if not self.get_ticker(ticker_name):
-            self.tickers[ticker_name] = Ticker(ticker_name=ticker_uppercase, description=description)
+        if not self.get_ticker(ticker_uppercase):
+            self.ticker_count += 1
+            self.tickers[ticker_uppercase] = Ticker(ticker_name=ticker_uppercase, description=description)
             return True
 
         return False
@@ -145,5 +150,17 @@ class Portfolio:
         ticker_uppercase = ticker_name.upper()
 
         return self.tickers.get(ticker_uppercase, None)
+    
+    def __str__(self):
+        return (
+            f"Portfolio: {self.name}"
+            f" - {self.ticker_count} tickers tracked."
+        )
+    
+    def __repr__(self):
+        return (
+            f"Portfolio {self.name}, {self.ticker_count} tickers."
+        )
+
     
 

@@ -2,7 +2,7 @@ from classes import Command
 from typing import Optional
 import difflib
 from programs.utilities import quit_clip
-from programs.portfolio import buy
+from programs.portfolio import buy, sell
 
 
 RawCommand = list[str]
@@ -13,7 +13,8 @@ RawCommand = list[str]
 
 command_mapping = {
     Command.QUIT: quit_clip,
-    Command.BUY: buy
+    Command.BUY: buy,
+    Command.SELL: sell
 }
 
 def get_closest_match(input_str: str, acceptable_strings: list[str]) -> str:
