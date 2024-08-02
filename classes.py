@@ -1,8 +1,22 @@
 
 import time
-import random
+import os
 import datetime
-from typing import Optional, Union
+from enum import Enum
+from typing import Optional
+
+
+
+class Command(Enum):
+    BUY = "buy"
+    SELL = "sell"
+    QUIT = "quit"
+
+# (Command, command_arguments)
+CommandArgs = list[str]
+ParsedCommand = tuple[Command, list[str]]
+
+
 class SystemConfig:
     def __init__(self):
         self.main_loop_continue = True
@@ -15,12 +29,27 @@ class SystemConfig:
 
 class Position:
     def __init__(self, share_count: float, share_value: float, is_sell: bool = False, position_start: datetime.datetime = datetime.datetime.now()):
-        self.id = str(random.getrandbits(128))
+        self.id = str(os.urandom(5).hex()).upper()
+
         self.value = share_count * share_value
         self.number_of_shares = share_count
         self.share_price = share_value
         self.position_start = position_start
         self.is_sell = is_sell
+
+    def __str__(self):
+        return (
+            f"{'Sell ' if self.is_sell else ''}Position {self.id}\n"
+            f" - Total position value: ${self.value}\n"
+            f" - ({self.number_of_shares} shares at ${self.share_price} per share)\n"
+            f" - Created at: {self.position_start}\n"   
+        )
+    
+    def __repr__(self):
+        return (
+            f"{'Sell ' if self.is_sell else ''}Position: {self.id} -> {self.number_of_shares}"
+            f"x ${self.share_price} = ${self.value}. "
+        )
 
 
 
@@ -74,7 +103,7 @@ class Ticker:
 
 class Portfolio:
     def __init__(self):
-        self.tickers: dict[str, Ticker] = []
+        self.tickers: dict[str, Ticker] = {}
 
     def buy_position(self, ticker_name: str, position: Position, description: Optional[str] = None):
         self.add_ticker(ticker_name)
@@ -86,7 +115,7 @@ class Portfolio:
         this_ticker = self.get_ticker(ticker_name)
         this_ticker.sell_position(sell_position=position)
 
-    def add_ticker(self, ticker_name: str, description: Optional[str]) -> bool:
+    def add_ticker(self, ticker_name: str, description: Optional[str] = None) -> bool:
         ticker_uppercase = ticker_name.upper()
 
         if not self.get_ticker(ticker_name):

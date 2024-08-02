@@ -1,22 +1,20 @@
-from enum import Enum
+from classes import Command
 from typing import Optional
 import difflib
 from programs.utilities import quit_clip
+from programs.portfolio import buy
 
 
 RawCommand = list[str]
 
 
 
-class Command(Enum):
-    BUY = "buy"
-    SELL = "sell"
-    QUIT = "quit"
+
 
 command_mapping = {
-    Command.QUIT: quit_clip
+    Command.QUIT: quit_clip,
+    Command.BUY: buy
 }
-
 
 def get_closest_match(input_str: str, acceptable_strings: list[str]) -> str:
     comparison_ratios = [(candidate_str, difflib.SequenceMatcher(None, input_str, candidate_str).ratio()) for candidate_str in acceptable_strings]
@@ -34,7 +32,7 @@ def tell_user_text(notification_text):
 
 
 
-def read_new_command(prompt: str = ":") -> RawCommand:
+def read_new_command(prompt: str = ">") -> RawCommand:
     """
     Read command from CLI, and return as a raw command.
     """
