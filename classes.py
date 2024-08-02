@@ -100,6 +100,22 @@ class Ticker:
         self.positions[sell_position.id] = sell_position
 
         return True
+    
+    def __str__(self):
+        return (
+            f"Ticker: {self.name}\n"
+            f"{self.description}" + '\n' if self.description else f"Ticker: {self.name}\n"
+            f" - Number of positions held: {self.position_count}\n"
+            f" - (Number of sold positions: {self.sell_count})\n"
+            f" - Total value: ${self.total_value}\n"
+            f" - Average price: ${self.avg_price}\n"  
+        )
+    
+    def __repr__(self):
+        return (
+            f"Ticker {self.name} -> {self.position_count} - {self.sell_count} @ ${self.avg_price}avg = ${self.total_value}"
+        )
+
 
 class Portfolio:
     def __init__(self):
