@@ -13,11 +13,6 @@ class SystemConfig:
         self.end_time = time.time()
         self.uptime = self.end_time - self.start_time
 
-
-class Portfolio:
-    def __init__(self):
-        self.positions = []
-
 class Position:
     def __init__(self, share_count: float, share_value: float, is_sell: bool = False, position_start: datetime.datetime = datetime.datetime.now()):
         self.id = str(random.getrandbits(128))
@@ -26,6 +21,7 @@ class Position:
         self.share_price = share_value
         self.position_start = position_start
         self.is_sell = is_sell
+
 
 
 class Ticker:
@@ -76,9 +72,33 @@ class Ticker:
 
         return True
 
+class Portfolio:
+    def __init__(self):
+        self.tickers: dict[str, Ticker] = []
+
+    def buy_position(self, ticker_name: str, position: Position, description: Optional[str] = None):
+        self.add_ticker(ticker_name)
+
+        this_ticker = self.get_ticker(ticker_name)
+        this_ticker.add_position(new_position=position)
+
+    def sell_position(self, ticker_name: str, position: Position):
+        this_ticker = self.get_ticker(ticker_name)
+        this_ticker.sell_position(sell_position=position)
+
+    def add_ticker(self, ticker_name: str, description: Optional[str]) -> bool:
+        ticker_uppercase = ticker_name.upper()
+
+        if not self.get_ticker(ticker_name):
+            self.tickers[ticker_name] = Ticker(ticker_name=ticker_uppercase, description=description)
+            return True
+
+        return False
 
 
+    def get_ticker(self, ticker_name: str) -> Optional[Ticker]:
+        ticker_uppercase = ticker_name.upper()
 
+        return self.tickers.get(ticker_uppercase, None)
     
-
 
