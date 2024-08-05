@@ -14,7 +14,8 @@ RawCommand = list[str]
 command_mapping = {
     Command.QUIT: quit_clip,
     Command.BUY: buy,
-    Command.SELL: sell
+    Command.SELL: sell,
+    Command.JOEY: print
 }
 
 def get_closest_match(input_str: str, acceptable_strings: list[str]) -> str:

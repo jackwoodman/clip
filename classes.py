@@ -18,17 +18,57 @@ ParsedCommand = tuple[Command, list[str]]
 
 
 class SystemConfig:
+    """
+    Singleton class representing the system settings for a given
+    execution of the CLIP program. Used for basic function keeping.
+
+    Attributes:
+        main_loop_continue: Bool indicating whether main execution loop
+            should be allowed to continue.
+        start_time: time.time object represent program initialisation.
+    """
+
     def __init__(self):
+        """
+        Initialise a new CLIP instance.
+        """
         self.main_loop_continue = True
         self.start_time = time.time()
 
 
     def freeze(self):
+        """
+        On 'shutdown' of CLIP, count execution as over and note uptime.
+        """
         self.end_time = time.time()
         self.uptime = self.end_time - self.start_time
 
+
 class Position:
+    """ Class representing a position, bought or sold.
+
+    Each position is uniquely identified, and serves as a record of transaction,
+    either purcahsing a stock, or selling a stock. This is the atomic
+    unit used by CLIP.
+
+    Attributes:
+        id: Hexadecimal unique identifier string representing this position.
+        value: Floating point dollar value of this position.
+        number_of_shares: Floating point number of shares purchased/sold for this position.
+        share_price: Floating point dollar value of each individual share.
+        position_start: Datetime representing when this position was sold/bought.
+        is_sell: Boolean value denoting this as a sell position or not.
+    """
     def __init__(self, share_count: float, share_value: float, is_sell: bool = False, position_start: datetime.datetime = datetime.datetime.now()):
+        """
+        Generate a new position record.
+
+        Arguments:
+            share_count: Number of shares sold/bought.
+            share_value: Floating point value of each share.
+            is_sell: Optional bool indicating whether this was a sell or not. Defaults False.
+            position_start: Optional datetime of the sell/buy. Default is datetime.now().
+        """
         self.id = str(os.urandom(5).hex()).upper()
 
         self.value = share_count * share_value
@@ -54,6 +94,16 @@ class Position:
 
 
 class Ticker:
+    """Class representing a given ticker identity.
+
+    A Ticker is the 3/4 letter identifier of a stock, index, or other group of Positions.
+    This class keeps track of the positions open and closed for a given ticker, as well
+    as some basic information about the positions.
+
+    Attributes:
+        name: String name of the ticker.
+    
+    """
     def __init__(self, ticker_name: str, description: Optional[str] = None):
         self.name = ticker_name
         self.description = description
