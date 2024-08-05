@@ -5,6 +5,7 @@ import bisect
 
 
 class NotificationSource(Enum):
+    TEST = "test"
     SYSTEM = "system"
 
 
@@ -26,20 +27,36 @@ class Notification:
         self.text_length = len(text)
 
     def invalidate(self):
+        """
+        Mark this notification as invalid; no longer useful.
+        """
         self.valid = False
         self.invalidation_time = datetime.now()
 
     def get_number_of_lines(self) -> int:
+        """
+        Return the number of lines to be represented. Does not indicate how long
+        the text field will be.
+
+        Returns:
+            Integer count of number of lines, either 2 or 3.
+        """
         return 2 if not self.subtitle else 3
+
+    def __str__(self):
+        second_line = f"\n  ({self.subtitle})\n" if self.subtitle else "\n"
+        return f" {self.title}{second_line}" f" - {self.text}\n"
+
+    def __repr__(self):
+        return f"Notification {self.title} - subtitle {'not ' if not self.subtitle else ''}present."
 
 
 class NotificationManager:
     buffer_max_size = 100
-
     notification_buffer: list[Notification] = []
 
     def __init__(self):
-        self.notification_buffer = [None for _ in range(self.buffer_max_size)]
+        self.notification_buffer = []
 
     def is_full(self) -> bool:
         """
@@ -84,9 +101,10 @@ class NotificationManager:
         Returns:
             The integer length of the records after insertions.
         """
-        bisect.insort(
-            self.notification_buffer, new_notification, key=lambda notification: notification.notification_time
-        )
+        if len(self.notification_buffer) >= 1:
+            bisect.insort(self.notification_buffer, new_notification, key=lambda x: x.notification_time)
+        else:
+            self.append_notification(new_notification=new_notification)
 
         if cull_records:
             self.cull_notifications()

@@ -1,6 +1,7 @@
 from cli_utils import parse_command, read_new_command, command_mapping
 from graphics import display_welcome, display_goodbye
 from classes import SystemConfig, Portfolio
+from notifications import Notification, NotificationSource, NotificationManager
 main_loop_continue = True
 
 
