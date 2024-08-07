@@ -1,5 +1,5 @@
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 import bisect
 
@@ -16,15 +16,32 @@ class Notification:
         text: str,
         subtitle: Optional[str] = None,
         source: NotificationSource = NotificationSource.SYSTEM,
+        expiration_delta: timedelta = None,
     ):
         self.title = title
         self.text = text
         self.subtitle = subtitle
         self.notification_time = datetime.now()
+        self.expiration_delta: timedelta = expiration_delta
         self.invalidation_time: datetime = None
         self.source = source
         self.valid = True
         self.text_length = len(text)
+
+    def check_expired(self) -> bool:
+        """
+        Check whether this notification should auto expire - if so,
+        invalidate self.
+
+        Returns:
+            A bool indicating whether notification expired or not.
+        """
+
+        if self.notification_time + self.expiration_delta >= datetime.now():
+            self.invalidate()
+            return True
+
+        return False
 
     def invalidate(self):
         """
@@ -101,10 +118,9 @@ class NotificationManager:
         Returns:
             The integer length of the records after insertions.
         """
-        if len(self.notification_buffer) >= 1:
-            bisect.insort(self.notification_buffer, new_notification, key=lambda x: x.notification_time)
-        else:
-            self.append_notification(new_notification=new_notification)
+
+        bisect.insort(self.notification_buffer, new_notification, key=lambda x: x.notification_time)
+        self.notification_buffer.reverse()
 
         if cull_records:
             self.cull_notifications()
