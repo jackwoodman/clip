@@ -1,4 +1,3 @@
-
 import time
 import os
 import datetime
@@ -6,11 +5,12 @@ from enum import Enum
 from typing import Optional
 
 
-
 class Command(Enum):
     BUY = "buy"
     SELL = "sell"
     QUIT = "quit"
+    JOEY = "JOEY"
+
 
 # (Command, command_arguments)
 CommandArgs = list[str]
@@ -35,7 +35,6 @@ class SystemConfig:
         self.main_loop_continue = True
         self.start_time = time.time()
 
-
     def freeze(self):
         """
         On 'shutdown' of CLIP, count execution as over and note uptime.
@@ -45,7 +44,7 @@ class SystemConfig:
 
 
 class Position:
-    """ Class representing a position, bought or sold.
+    """Class representing a position, bought or sold.
 
     Each position is uniquely identified, and serves as a record of transaction,
     either purcahsing a stock, or selling a stock. This is the atomic
@@ -59,7 +58,14 @@ class Position:
         position_start: Datetime representing when this position was sold/bought.
         is_sell: Boolean value denoting this as a sell position or not.
     """
-    def __init__(self, share_count: float, share_value: float, is_sell: bool = False, position_start: datetime.datetime = datetime.datetime.now()):
+
+    def __init__(
+        self,
+        share_count: float,
+        share_value: float,
+        is_sell: bool = False,
+        position_start: datetime.datetime = datetime.datetime.now(),
+    ):
         """
         Generate a new position record.
 
@@ -82,15 +88,14 @@ class Position:
             f"{'Sell ' if self.is_sell else ''}Position {self.id}\n"
             f" - Total position value: ${self.value}\n"
             f" - ({self.number_of_shares} shares at ${self.share_price} per share)\n"
-            f" - Created at: {self.position_start}\n"   
+            f" - Created at: {self.position_start}\n"
         )
-    
+
     def __repr__(self):
         return (
             f"{'Sell ' if self.is_sell else ''}Position: {self.id} -> {self.number_of_shares}"
             f" x ${self.share_price:.2f} = ${self.value:.2f}. "
         )
-
 
 
 class Ticker:
@@ -102,8 +107,9 @@ class Ticker:
 
     Attributes:
         name: String name of the ticker.
-    
+
     """
+
     def __init__(self, ticker_name: str, description: Optional[str] = None):
         self.name = ticker_name
         self.description = description
@@ -115,17 +121,19 @@ class Ticker:
         self.sell_count = 0
         self.avg_price = 0.0
 
-
     def add_position(self, new_position: Position):
         self.positions[new_position.id] = new_position
         self.total_shares += new_position.number_of_shares
         self.total_value += new_position.value
         self.position_count += 1
-        self.avg_price = (self.avg_price + new_position.share_price) / 2 if self.position_count > 1 else new_position.share_price
+        self.avg_price = (
+            (self.avg_price + new_position.share_price) / 2
+            if self.position_count > 1
+            else new_position.share_price
+        )
 
     def get_position(self, position_id: str) -> Position:
         return self.positions.get(position_id, None)
-
 
     def remove_position(self, position_id: str) -> bool:
         # inverse of add_position(). not selling
@@ -134,7 +142,7 @@ class Ticker:
         departing_position = self.get_position(position_id)
         self.position_count -= 1
         self.total_shares -= departing_position.number_of_shares
-        self.total_value -= departing_position.value 
+        self.total_value -= departing_position.value
         self.avg_price = (self.avg_price * 2) - departing_position.share_price
 
         self.positions.pop(position_id)
@@ -147,26 +155,24 @@ class Ticker:
         self.total_value -= sell_position.value
 
         self.avg_price = self.total_value / self.total_shares
-     
 
         self.positions[sell_position.id] = sell_position
 
         return True
-    
+
     def __str__(self):
         return (
-            f"Ticker: {self.name}\n"
-            f"{self.description}" + '\n' if self.description else f"Ticker: {self.name}\n"
+            f"Ticker: {self.name}\n" f"{self.description}" + "\n"
+            if self.description
+            else f"Ticker: {self.name}\n"
             f" - Number of positions held: {self.position_count}\n"
             f" - (Number of sold positions: {self.sell_count})\n"
             f" - Total value: ${self.total_value:.2f}\n"
-            f" - Average price: ${self.avg_price:.2f}\n"  
+            f" - Average price: ${self.avg_price:.2f}\n"
         )
-    
+
     def __repr__(self):
-        return (
-            f"Ticker {self.name} -> {self.position_count} - {self.sell_count} @ ${self.avg_price:.2f}avg = ${self.total_value}"
-        )
+        return f"Ticker {self.name} -> {self.position_count} - {self.sell_count} @ ${self.avg_price:.2f}avg = ${self.total_value}"
 
 
 class Portfolio:
@@ -195,22 +201,13 @@ class Portfolio:
 
         return False
 
-
     def get_ticker(self, ticker_name: str) -> Optional[Ticker]:
         ticker_uppercase = ticker_name.upper()
 
         return self.tickers.get(ticker_uppercase, None)
-    
+
     def __str__(self):
-        return (
-            f"Portfolio: {self.name}"
-            f" - {self.ticker_count} tickers tracked."
-        )
-    
+        return f"Portfolio: {self.name}" f" - {self.ticker_count} tickers tracked."
+
     def __repr__(self):
-        return (
-            f"Portfolio {self.name}, {self.ticker_count} tickers."
-        )
-
-    
-
+        return f"Portfolio {self.name}, {self.ticker_count} tickers."
